@@ -36,7 +36,7 @@ patch_size = 5
 depth = 16
 num_hidden = 64
 epoch = 1
-num_steps = nb_total_train_img / batch_size
+num_steps = nb_total_train_img / reduction / batch_size
 
 
 def print_data_details(zip_filenames):
