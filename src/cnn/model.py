@@ -262,8 +262,77 @@ def model(data):
     hidden = tf.nn.relu(tf.matmul(reshape, layer3_weights) + layer3_biases)
     return tf.matmul(hidden, layer4_weights) + layer4_biases
 
+def model(data):
+    """Create the flow of the model.
 
-def setup_model():
+    Args:
+        data (4-D Tensor): training data.
+    Returns:
+        4D-Tensor: result of the prediction for each class.
+    """
+    # 1st vanilla convolution with padding.
+    conv = tf.nn.conv2d(data, layer1_weights, [1, 2, 2, 1], padding='SAME')
+    # 1st ReLU output.
+    hidden = tf.nn.relu(conv + layer1_biases)
+    # 2nd vanilla convolution with padding.
+    conv = tf.nn.conv2d(hidden, layer2_weights, [1, 2, 2, 1], padding='SAME')
+    # 2nd ReLU output.
+    hidden = tf.nn.relu(conv + layer2_biases)
+    # Reshaping the hidden output.
+    shape = hidden.get_shape().as_list()
+    reshape = tf.reshape(hidden, [shape[0], shape[1] * shape[2] * shape[3]])
+    # Fully connected neural network.
+    hidden = tf.nn.relu(tf.matmul(reshape, layer3_weights) + layer3_biases)
+    return tf.matmul(hidden, layer4_weights) + layer4_biases
+
+
+if __name__ == "__main__":
+    # print("****** data details *******")
+    # print_data_details(zip(train_filenames, test_filenames, classes))
+
+    # create subset of the original data
+    new_train_dir, new_test_dir = subset(zip(train_filenames, test_filenames, classes), reduction)
+    print('New training directory is: %s' % new_train_dir)
+    print('New testing directory is: %s' % new_test_dir)
+
+    print('Merging datasets with reduction %d.' % reduction)
+    print('Processing training datatsets.')
+    merge_classes(new_train_dir, "train", nb_total_train_img / reduction, classes)
+    print('End of processing training datasets.')
+    print('Processing testing datatsets.')
+    merge_classes(new_test_dir, "test", nb_total_test_img / reduction, classes)
+    print('End of processing test datasets.')
+
+    # Load data into memory
+    if not ('test_data' in vars() and 'test_labels' in vars()):
+        t0 = time.time()
+        print('Loading testing data...')
+        test_data, test_labels = load_data(new_test_dir)
+        print('Testing data/labels loaded in %d sec' % (time.time() - t0))
+    else:
+        print('Testing data/labels is already loaded.')
+
+    if not (('train_data' in vars()) and ('train_labels' in vars())):
+        t0 = time.time()
+        print('Loading training data...')
+        train_data, train_labels = load_data(new_train_dir)
+        print('Training data/labels loaded in %d sec' % (time.time() - t0))
+    else:
+        print('Training data/labels is alreayd loaded.')
+
+    # Reformat data
+    t0 = time.time()
+    print('Formatting testing data...')
+    test_data, test_labels = reformat(test_data, test_labels)
+    print('Testing data/labels formatted in %d sec' % (time.time()-t0))
+    t0 = time.time()
+    print('Formatting training data...')
+    train_data, train_labels = reformat(train_data, train_labels)
+    print('Training data/labels formatted in %d sec' % (time.time()-t0))
+
+    print('Training set dataset', train_data.shape, 'labels', train_labels.shape)
+    print('Testing set dataset', test_data.shape, 'labels', test_labels.shape)
+
     graph = tf.Graph()
 
     # Seting the data, weights and biases variables within the default Graph.
@@ -329,59 +398,8 @@ def setup_model():
         train_prediction = tf.nn.softmax(logits, name='train_prediction')
         # valid_prediction = tf.nn.softmax(model(tf_valid_dataset))
         test_prediction = tf.nn.softmax(model(tf_test_dataset), name='test_prediction')
-    return graph
-
-if __name__ == "__main__":
-    # print("****** data details *******")
-    # print_data_details(zip(train_filenames, test_filenames, classes))
-
-    # create subset of the original data
-    new_train_dir, new_test_dir = subset(zip(train_filenames, test_filenames, classes), reduction)
-    print('New training directory is: %s' % new_train_dir)
-    print('New testing directory is: %s' % new_test_dir)
-
-    print('Merging datasets with reduction %d.' % reduction)
-    print('Processing training datatsets.')
-    merge_classes(new_train_dir, "train", nb_total_train_img / reduction, classes)
-    print('End of processing training datasets.')
-    print('Processing testing datatsets.')
-    merge_classes(new_test_dir, "test", nb_total_test_img / reduction, classes)
-    print('End of processing test datasets.')
-
-    # Load data into memory
-    if not ('test_data' in vars() and 'test_labels' in vars()):
-        t0 = time.time()
-        print('Loading testing data...')
-        test_data, test_labels = load_data(new_test_dir)
-        print('Testing data/labels loaded in %d sec' % (time.time() - t0))
-    else:
-        print('Testing data/labels is already loaded.')
-
-    if not (('train_data' in vars()) and ('train_labels' in vars())):
-        t0 = time.time()
-        print('Loading training data...')
-        train_data, train_labels = load_data(new_train_dir)
-        print('Training data/labels loaded in %d sec' % (time.time() - t0))
-    else:
-        print('Training data/labels is alreayd loaded.')
-
-    # Reformat data
-    t0 = time.time()
-    print('Formatting testing data...')
-    test_data, test_labels = reformat(test_data, test_labels)
-    print('Testing data/labels formatted in %d sec' % (time.time()-t0))
-    t0 = time.time()
-    print('Formatting training data...')
-    train_data, train_labels = reformat(train_data, train_labels)
-    print('Training data/labels formatted in %d sec' % (time.time()-t0))
-
-    print('Training set dataset', train_data.shape, 'labels', train_labels.shape)
-    print('Testing set dataset', test_data.shape, 'labels', test_labels.shape)
-
-    graph = setup_model()
 
     # NB: before launching the model, need to restart the network.
-
     with tf.Session(graph=graph) as session:
         tf.initialize_all_variables().run()
         print('Initialized')
@@ -399,4 +417,4 @@ if __name__ == "__main__":
                 print('Minibatch accuracy: %.1f%%' % accuracy(predictions, batch_labels))
     #           print('Validation accuracy: %.1f%%' % accuracy(
     #                 valid_prediction.eval(), valid_labels))
-        print('Test accuracy: %.1f%%' % accuracy(test_prediction.eval(), _r_test_labels))
+        print('Test accuracy: %.1f%%' % accuracy(test_prediction.eval(), test_labels))
