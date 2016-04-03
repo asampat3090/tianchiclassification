@@ -20,7 +20,9 @@ test_filenames = ["/".join([test_data_path, f]) for f in os.listdir(test_data_pa
 classes = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
 nb_total_train_img = 90000
-nb_total_test_img = 18000
+# nb_total_test_img = 18000
+nb_total_test_img = 9000
+
 
 reduction = 20
 
