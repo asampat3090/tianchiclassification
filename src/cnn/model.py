@@ -3,14 +3,15 @@ import numpy as np
 import tensorflow as tf
 from six.moves import cPickle as pickle
 from six.moves import range
+import random
 import time
 import os
 
 
 # ****************** global variables *****************
 
-data_dir = '/Volumes/Macintosh HD/Users/Benze/Downloads/data'
-train_data_path = "/".join([data_dir, 'training'])
+data_dir = '/Volumes/Macintosh HD/Users/perezmunoz/Data/tianchi'
+train_data_path = "/".join([data_dir, 'train'])
 test_data_path = "/".join([data_dir, 'test'])
 
 # train ~ 6Gb and test ~ 1.2 Gb
@@ -19,23 +20,24 @@ test_filenames = ["/".join([test_data_path, f]) for f in os.listdir(test_data_pa
 
 classes = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
+reduction = 40
+
+# initially there are:
+    # - 90 000 training images
+    # - 18 000 testing images
 nb_total_train_img = 90000
-# nb_total_test_img = 18000
-nb_total_test_img = 9000
-
-
-reduction = 20
+nb_total_test_img = 18000
 
 image_size = 128
 num_labels = 9
 num_channels = 1  # grayscale
 
 # ***************** neural network parameters ***********
-batch_size = 100
+batch_size = 16
 patch_size = 5
 depth = 16
 num_hidden = 64
-epoch = 1
+epoch = 100
 num_steps = nb_total_train_img / reduction / batch_size
 
 
@@ -265,76 +267,8 @@ def model(data):
     hidden = tf.nn.relu(tf.matmul(reshape, layer3_weights) + layer3_biases)
     return tf.matmul(hidden, layer4_weights) + layer4_biases
 
-def model(data):
-    """Create the flow of the model.
-
-    Args:
-        data (4-D Tensor): training data.
-    Returns:
-        4D-Tensor: result of the prediction for each class.
-    """
-    # 1st vanilla convolution with padding.
-    conv = tf.nn.conv2d(data, layer1_weights, [1, 2, 2, 1], padding='SAME')
-    # 1st ReLU output.
-    hidden = tf.nn.relu(conv + layer1_biases)
-    # 2nd vanilla convolution with padding.
-    conv = tf.nn.conv2d(hidden, layer2_weights, [1, 2, 2, 1], padding='SAME')
-    # 2nd ReLU output.
-    hidden = tf.nn.relu(conv + layer2_biases)
-    # Reshaping the hidden output.
-    shape = hidden.get_shape().as_list()
-    reshape = tf.reshape(hidden, [shape[0], shape[1] * shape[2] * shape[3]])
-    # Fully connected neural network.
-    hidden = tf.nn.relu(tf.matmul(reshape, layer3_weights) + layer3_biases)
-    return tf.matmul(hidden, layer4_weights) + layer4_biases
-
 
 if __name__ == "__main__":
-    # print("****** data details *******")
-    # print_data_details(zip(train_filenames, test_filenames, classes))
-
-    # create subset of the original data
-    new_train_dir, new_test_dir = subset(zip(train_filenames, test_filenames, classes), reduction)
-    print('New training directory is: %s' % new_train_dir)
-    print('New testing directory is: %s' % new_test_dir)
-
-    print('Merging datasets with reduction %d.' % reduction)
-    print('Processing training datatsets.')
-    merge_classes(new_train_dir, "train", nb_total_train_img / reduction, classes)
-    print('End of processing training datasets.')
-    print('Processing testing datatsets.')
-    merge_classes(new_test_dir, "test", nb_total_test_img / reduction, classes)
-    print('End of processing test datasets.')
-
-    # Load data into memory
-    if not ('test_data' in vars() and 'test_labels' in vars()):
-        t0 = time.time()
-        print('Loading testing data...')
-        test_data, test_labels = load_data(new_test_dir)
-        print('Testing data/labels loaded in %d sec' % (time.time() - t0))
-    else:
-        print('Testing data/labels is already loaded.')
-
-    if not (('train_data' in vars()) and ('train_labels' in vars())):
-        t0 = time.time()
-        print('Loading training data...')
-        train_data, train_labels = load_data(new_train_dir)
-        print('Training data/labels loaded in %d sec' % (time.time() - t0))
-    else:
-        print('Training data/labels is alreayd loaded.')
-
-    # Reformat data
-    t0 = time.time()
-    print('Formatting testing data...')
-    test_data, test_labels = reformat(test_data, test_labels)
-    print('Testing data/labels formatted in %d sec' % (time.time()-t0))
-    t0 = time.time()
-    print('Formatting training data...')
-    train_data, train_labels = reformat(train_data, train_labels)
-    print('Training data/labels formatted in %d sec' % (time.time()-t0))
-
-    print('Training set dataset', train_data.shape, 'labels', train_labels.shape)
-    print('Testing set dataset', test_data.shape, 'labels', test_labels.shape)
 
     graph = tf.Graph()
 
@@ -386,6 +320,9 @@ if __name__ == "__main__":
                     tf.nn.softmax_cross_entropy_with_logits(logits, tf_train_labels, name='cross_entropy'),
                     name='loss')
 
+        # loss summary
+        tf.scalar_summary("loss", loss)
+
         # Optmizer tensor.
         optimizer = tf.train.GradientDescentOptimizer(0.05, use_locking=False,
                                                       name='gradient_descent').minimize(loss, var_list=[
@@ -402,8 +339,31 @@ if __name__ == "__main__":
         # valid_prediction = tf.nn.softmax(model(tf_valid_dataset))
         test_prediction = tf.nn.softmax(model(tf_test_dataset), name='test_prediction')
 
+        # https://www.tensorflow.org/versions/master/how_tos/graph_viz/index.html#tensorboard-graph-visualization
+        # TensorFlow graph visualization
+        tf.histogram_summary("layer 1 weights", layer1_weights)
+        tf.histogram_summary("layer 1 biases", layer1_biases)
+        tf.histogram_summary("layer 2 weights", layer2_weights)
+        tf.histogram_summary("layer 2 biases", layer2_biases)
+        tf.histogram_summary("layer 3 weights", layer3_weights)
+        tf.histogram_summary("layer 3 biases", layer3_biases)
+        tf.histogram_summary("layer 4 weights", layer4_weights)
+        tf.histogram_summary("layer 4 biases", layer4_biases)
+        tf.histogram_summary("train prediction", train_prediction)
+        tf.histogram_summary("test prediction", test_prediction)
+
+        # Merge all the summaries and write them out to /tmp/mnist_logs
+        merged_summaries = tf.merge_all_summaries()
+
+
     # NB: before launching the model, need to restart the network.
     with tf.Session(graph=graph) as session:
+        # https://www.tensorflow.org/versions/master/how_tos/variables/index.html#saving-and-restoring
+        # Add ops to save and restore all the variables.
+        saver = tf.train.Saver()
+
+        writer = tf.train.SummaryWriter("../../logs/",
+                                        session.graph.as_graph_def(add_shapes=True))
         tf.initialize_all_variables().run()
         print('Initialized')
         print(train_labels.shape)
@@ -415,11 +375,22 @@ if __name__ == "__main__":
                 batch_data = train_data[offset:(offset + batch_size), :, :, :]
                 batch_labels = train_labels[offset:(offset + batch_size), :]
                 feed_dict = {tf_train_dataset: batch_data, tf_train_labels: batch_labels}
-                _, l, predictions = session.run(
-                    [optimizer, loss, train_prediction], feed_dict=feed_dict)
-                if (step % 10 == 0):
+                _, summary_str, l, predictions = session.run(
+                    [optimizer, merged_summaries, loss, train_prediction], feed_dict=feed_dict)
+                if (step % 100 == 0):
+                    writer.add_summary(summary_str, step)
                     print('Minibatch loss at step %d: %f' % (step, l))
                     print('Minibatch accuracy: %.1f%%' % accuracy(predictions, batch_labels))
-        #           print('Validation accuracy: %.1f%%' % accuracy(
-        #                 valid_prediction.eval(), valid_labels))
-        print('Test accuracy: %.1f%%' % accuracy(test_prediction.eval(), test_labels))
+                    # print('Validation accuracy: %.1f%%' % accuracy(
+                    #         valid_prediction.eval(), valid_labels))
+                  # Save the variables to disk.
+                # if (step%50==0): # every 50 step saves it
+                    # Here, all the variables are saved because nothing is specified.
+                    # Otherwise only a set of variables are saved and then need
+                    # to initializes the rest of the variables in the graph
+                    # save_path = saver.save(session, '../../ckpt/%d-%d.ckpt' % (i,step))
+                    # print("Model saved in file: %s" % save_path)
+
+            print('Test accuracy epoch %d: %.1f%%' % \
+                            (i, (accuracy(test_prediction.eval(), test_labels))))
+
