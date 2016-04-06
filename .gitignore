@@ -1,1 +1,9 @@
 *.pyc
+*.pdf
+*.fls
+*.bbl
+*.aux
+*.fdb_latexmk
+*.gz
+*.blg
+*.log
