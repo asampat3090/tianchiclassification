@@ -1,0 +1,316 @@
+Processing images of class 0
+    File train-file-0.pickle already created.
+    File test-file-0.pickle already created.
+Processing images of class 1
+    File train-file-1.pickle already created.
+    File test-file-1.pickle already created.
+Processing images of class 2
+    File train-file-2.pickle already created.
+    File test-file-2.pickle already created.
+Processing images of class 3
+    File train-file-3.pickle already created.
+    File test-file-3.pickle already created.
+Processing images of class 4
+    File train-file-4.pickle already created.
+    File test-file-4.pickle already created.
+Processing images of class 5
+    File train-file-5.pickle already created.
+    File test-file-5.pickle already created.
+Processing images of class 6
+    File train-file-6.pickle already created.
+    File test-file-6.pickle already created.
+Processing images of class 7
+    File train-file-7.pickle already created.
+    File test-file-7.pickle already created.
+Processing images of class 8
+    File train-file-8.pickle already created.
+    File test-file-8.pickle already created.
+New training directory is: /Volumes/Macintosh HD/Users/perezmunoz/Data/tianchi/train20
+New testing directory is: /Volumes/Macintosh HD/Users/perezmunoz/Data/tianchi/test20
+Merging datasets with reduction 20.
+Processing training datatsets.
+Files have already been created.
+Time processing: 0 sec
+End of processing training datasets.
+Processing testing datatsets.
+Files have already been created.
+Time processing: 0 sec
+End of processing test datasets.
+Loading testing data...
+Testing data/labels loaded in 40 sec
+Loading training data...
+Training data/labels loaded in 222 sec
+Formatting testing data...
+Testing data/labels formatted in 0 sec
+Formatting training data...
+Training data/labels formatted in 0 sec
+Training set dataset (4500, 128, 128, 1) labels (4500, 9)
+Testing set dataset (900, 128, 128, 1) labels (900, 9)
+Initialized
+(4500, 9)
+epoch 0...
+Minibatch loss at step 0: 9.444141
+Minibatch accuracy: 8.0%
+Minibatch loss at step 10: 4.639091
+Minibatch accuracy: 20.0%
+Minibatch loss at step 20: 4.952714
+Minibatch accuracy: 0.0%
+Minibatch loss at step 30: 2.178367
+Minibatch accuracy: 12.0%
+Minibatch loss at step 40: 2.171681
+Minibatch accuracy: 16.0%
+Minibatch loss at step 50: 2.294000
+Minibatch accuracy: 8.0%
+Minibatch loss at step 60: 2.318140
+Minibatch accuracy: 12.0%
+Minibatch loss at step 70: 2.285639
+Minibatch accuracy: 8.0%
+Minibatch loss at step 80: 2.232554
+Minibatch accuracy: 12.0%
+Minibatch loss at step 90: 2.192502
+Minibatch accuracy: 4.0%
+Minibatch loss at step 100: 2.160397
+Minibatch accuracy: 16.0%
+Minibatch loss at step 110: 2.160137
+Minibatch accuracy: 24.0%
+Minibatch loss at step 120: 2.240792
+Minibatch accuracy: 8.0%
+Minibatch loss at step 130: 2.175725
+Minibatch accuracy: 20.0%
+Minibatch loss at step 140: 2.146148
+Minibatch accuracy: 16.0%
+Minibatch loss at step 150: 2.263578
+Minibatch accuracy: 8.0%
+Minibatch loss at step 160: 2.169798
+Minibatch accuracy: 20.0%
+Minibatch loss at step 170: 2.230728
+Minibatch accuracy: 16.0%
+Test accuracy epoch 0: 10.7%
+epoch 1...
+Minibatch loss at step 0: 2.121545
+Minibatch accuracy: 24.0%
+Minibatch loss at step 10: 2.268484
+Minibatch accuracy: 12.0%
+Minibatch loss at step 20: 2.369932
+Minibatch accuracy: 0.0%
+Minibatch loss at step 30: 2.158672
+Minibatch accuracy: 12.0%
+Minibatch loss at step 40: 2.191843
+Minibatch accuracy: 4.0%
+Minibatch loss at step 50: 2.250152
+Minibatch accuracy: 8.0%
+Minibatch loss at step 60: 2.285692
+Minibatch accuracy: 12.0%
+Minibatch loss at step 70: 2.237886
+Minibatch accuracy: 8.0%
+Minibatch loss at step 80: 2.186898
+Minibatch accuracy: 16.0%
+Minibatch loss at step 90: 2.194437
+Minibatch accuracy: 4.0%
+Minibatch loss at step 100: 2.172958
+Minibatch accuracy: 20.0%
+Minibatch loss at step 110: 2.146309
+Minibatch accuracy: 20.0%
+Minibatch loss at step 120: 2.248376
+Minibatch accuracy: 8.0%
+Minibatch loss at step 130: 2.185384
+Minibatch accuracy: 16.0%
+Minibatch loss at step 140: 2.135307
+Minibatch accuracy: 20.0%
+Minibatch loss at step 150: 2.255381
+Minibatch accuracy: 8.0%
+Minibatch loss at step 160: 2.164386
+Minibatch accuracy: 20.0%
+Minibatch loss at step 170: 2.225082
+Minibatch accuracy: 16.0%
+Test accuracy epoch 1: 11.6%
+epoch 2...
+Minibatch loss at step 0: 2.123818
+Minibatch accuracy: 32.0%
+Minibatch loss at step 10: 2.252954
+Minibatch accuracy: 12.0%
+Minibatch loss at step 20: 2.346888
+Minibatch accuracy: 0.0%
+Minibatch loss at step 30: 2.157658
+Minibatch accuracy: 12.0%
+Minibatch loss at step 40: 2.188493
+Minibatch accuracy: 4.0%
+Minibatch loss at step 50: 2.245834
+Minibatch accuracy: 8.0%
+Minibatch loss at step 60: 2.265571
+Minibatch accuracy: 12.0%
+Minibatch loss at step 70: 2.229169
+Minibatch accuracy: 8.0%
+Minibatch loss at step 80: 2.178594
+Minibatch accuracy: 16.0%
+Minibatch loss at step 90: 2.186813
+Minibatch accuracy: 4.0%
+Minibatch loss at step 100: 2.161154
+Minibatch accuracy: 20.0%
+Minibatch loss at step 110: 2.136675
+Minibatch accuracy: 20.0%
+Minibatch loss at step 120: 2.268049
+Minibatch accuracy: 8.0%
+Minibatch loss at step 130: 2.201482
+Minibatch accuracy: 12.0%
+Minibatch loss at step 140: 2.136701
+Minibatch accuracy: 16.0%
+Minibatch loss at step 150: 2.244127
+Minibatch accuracy: 12.0%
+Minibatch loss at step 160: 2.163696
+Minibatch accuracy: 20.0%
+Minibatch loss at step 170: 2.229383
+Minibatch accuracy: 16.0%
+Test accuracy epoch 2: 13.2%
+epoch 3...
+Minibatch loss at step 0: 2.075319
+Minibatch accuracy: 40.0%
+Minibatch loss at step 10: 2.243985
+Minibatch accuracy: 4.0%
+Minibatch loss at step 20: 2.319797
+Minibatch accuracy: 0.0%
+Minibatch loss at step 30: 2.145960
+Minibatch accuracy: 8.0%
+Minibatch loss at step 40: 2.214013
+Minibatch accuracy: 8.0%
+Minibatch loss at step 50: 2.236136
+Minibatch accuracy: 8.0%
+Minibatch loss at step 60: 2.256851
+Minibatch accuracy: 12.0%
+Minibatch loss at step 70: 2.217271
+Minibatch accuracy: 16.0%
+Minibatch loss at step 80: 2.205730
+Minibatch accuracy: 8.0%
+Minibatch loss at step 90: 2.150909
+Minibatch accuracy: 20.0%
+Minibatch loss at step 100: 2.167733
+Minibatch accuracy: 24.0%
+Minibatch loss at step 110: 2.174942
+Minibatch accuracy: 4.0%
+Minibatch loss at step 120: 2.232394
+Minibatch accuracy: 12.0%
+Minibatch loss at step 130: 2.241654
+Minibatch accuracy: 8.0%
+Minibatch loss at step 140: 2.135187
+Minibatch accuracy: 8.0%
+Minibatch loss at step 150: 2.183176
+Minibatch accuracy: 20.0%
+Minibatch loss at step 160: 2.138793
+Minibatch accuracy: 16.0%
+Minibatch loss at step 170: 2.213116
+Minibatch accuracy: 16.0%
+Test accuracy epoch 3: 14.4%
+epoch 4...
+Minibatch loss at step 0: 1.986797
+Minibatch accuracy: 40.0%
+Minibatch loss at step 10: 2.192038
+Minibatch accuracy: 20.0%
+Minibatch loss at step 20: 2.244364
+Minibatch accuracy: 8.0%
+Minibatch loss at step 30: 2.138362
+Minibatch accuracy: 16.0%
+Minibatch loss at step 40: 2.223433
+Minibatch accuracy: 16.0%
+Minibatch loss at step 50: 2.188712
+Minibatch accuracy: 8.0%
+Minibatch loss at step 60: 2.209083
+Minibatch accuracy: 16.0%
+Minibatch loss at step 70: 2.206930
+Minibatch accuracy: 16.0%
+Minibatch loss at step 80: 2.215801
+Minibatch accuracy: 8.0%
+Minibatch loss at step 90: 2.149501
+Minibatch accuracy: 20.0%
+Minibatch loss at step 100: 2.132356
+Minibatch accuracy: 24.0%
+Minibatch loss at step 110: 2.181870
+Minibatch accuracy: 8.0%
+Minibatch loss at step 120: 2.235283
+Minibatch accuracy: 12.0%
+Minibatch loss at step 130: 2.252234
+Minibatch accuracy: 4.0%
+Minibatch loss at step 140: 2.155996
+Minibatch accuracy: 8.0%
+Minibatch loss at step 150: 2.115232
+Minibatch accuracy: 16.0%
+Minibatch loss at step 160: 2.131766
+Minibatch accuracy: 12.0%
+Minibatch loss at step 170: 2.167691
+Minibatch accuracy: 12.0%
+Test accuracy epoch 4: 13.8%
+epoch 5...
+Minibatch loss at step 0: 1.972772
+Minibatch accuracy: 40.0%
+Minibatch loss at step 10: 2.144543
+Minibatch accuracy: 24.0%
+Minibatch loss at step 20: 2.192641
+Minibatch accuracy: 12.0%
+Minibatch loss at step 30: 2.125715
+Minibatch accuracy: 20.0%
+Minibatch loss at step 40: 2.196066
+Minibatch accuracy: 16.0%
+Minibatch loss at step 50: 2.186387
+Minibatch accuracy: 16.0%
+Minibatch loss at step 60: 2.183407
+Minibatch accuracy: 20.0%
+Minibatch loss at step 70: 2.179340
+Minibatch accuracy: 20.0%
+Minibatch loss at step 80: 2.248657
+Minibatch accuracy: 12.0%
+Minibatch loss at step 90: 2.143953
+Minibatch accuracy: 20.0%
+Minibatch loss at step 100: 2.137232
+Minibatch accuracy: 16.0%
+Minibatch loss at step 110: 2.186267
+Minibatch accuracy: 20.0%
+Minibatch loss at step 120: 2.219710
+Minibatch accuracy: 16.0%
+Minibatch loss at step 130: 2.216820
+Minibatch accuracy: 8.0%
+Minibatch loss at step 140: 2.162389
+Minibatch accuracy: 12.0%
+Minibatch loss at step 150: 2.062668
+Minibatch accuracy: 20.0%
+Minibatch loss at step 160: 2.137004
+Minibatch accuracy: 16.0%
+Minibatch loss at step 170: 2.155193
+Minibatch accuracy: 12.0%
+Test accuracy epoch 5: 14.6%
+epoch 6...
+Minibatch loss at step 0: 1.952467
+Minibatch accuracy: 40.0%
+Minibatch loss at step 10: 2.106146
+Minibatch accuracy: 24.0%
+Minibatch loss at step 20: 2.180691
+Minibatch accuracy: 16.0%
+Minibatch loss at step 30: 2.104841
+Minibatch accuracy: 20.0%
+Minibatch loss at step 40: 2.161701
+Minibatch accuracy: 16.0%
+Minibatch loss at step 50: 2.135629
+Minibatch accuracy: 16.0%
+Minibatch loss at step 60: 2.161580
+Minibatch accuracy: 16.0%
+Minibatch loss at step 70: 2.167547
+Minibatch accuracy: 20.0%
+Minibatch loss at step 80: 2.227140
+Minibatch accuracy: 8.0%
+Minibatch loss at step 90: 2.119731
+Minibatch accuracy: 32.0%
+Minibatch loss at step 100: 2.139741
+Minibatch accuracy: 20.0%
+Minibatch loss at step 110: 2.178912
+Minibatch accuracy: 16.0%
+Minibatch loss at step 120: 2.210407
+Minibatch accuracy: 16.0%
+Minibatch loss at step 130: 2.196040
+Minibatch accuracy: 4.0%
+Minibatch loss at step 140: 2.151838
+Minibatch accuracy: 20.0%
+Minibatch loss at step 150: 2.029829
+Minibatch accuracy: 20.0%
+Minibatch loss at step 160: 2.112868
+Minibatch accuracy: 16.0%
+Minibatch loss at step 170: 2.149246
+Minibatch accuracy: 16.0%
+Test accuracy epoch 6: 15.2%
