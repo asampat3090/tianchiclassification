@@ -9,24 +9,28 @@ import os
 class Loader(object):
     """Loader class to post process and load the data used to feed the model."""
 
-
+    # Default values given.
     def __init__(self, classes=9, reduction=40, batch_size=16, patch_size=5,
                  depth=16, num_hidden=64, epoch=100):
         self.data_dir = '/Volumes/Macintosh HD/Users/perezmunoz/Data/tianchi'
         self.train_dir = '/'.join([self.data_dir, 'train1'])
         self.test_dir = '/'.join([self.data_dir, 'test1'])
-        self.train_filenames = ['/'.join([self.train_dir, cl]) \
-                                for cl in os.listdir(self.train_dir)]
-        self.test_filenames = ['/'.join([self.test_dir, cl]) \
-                                for cl in os.listdir(self.test_dir)]
+        # Filenames templates
+        trainname = 'train-file-%d.pickle'
+        testname = 'test-file-%d.pickle'
+        # With such construction, we can select a subset of the whole classes.
+        self.train_filenames = ['/'.join([self.train_dir, 'files', trainname%cl]) \
+                                for cl in range(classes)]
+        self.test_filenames = ['/'.join([self.test_dir, 'files', testname%cl]) \
+                                for cl in range(classes)]
         self.classes = [i for i in range(classes)]
         self.zip = zip(self.train_filenames, self.test_filenames, self.classes)
-        self.new_train_dir = ""
-        self.new_test_dir = ""
-        self.nb_labels = 9
+        self.new_train_dir = ''
+        self.new_test_dir = ''
+        self.nb_labels = classes
         self.reduction = reduction
-        self.tot_train_img = 90000
-        self.tot_test_img = 18000
+        self.tot_train_img = 10000 * classes # Number of training images
+        self.tot_test_img = 2000 * classes # Number of testing images
         self.img_size = 128
         self.nb_channels = 1  # grayscale
         self.batch_size = batch_size
@@ -34,7 +38,10 @@ class Loader(object):
         self.depth = 16
         self.num_hidden = 64 # TO BETTER DEFINE THE HIDDEN NEURONS
         self.epoch = epoch
-        self.num_steps = self.tot_train_img / self.reduction / self.batch_size
+        self.num_batch = self.tot_train_img / self.reduction / self.batch_size
+        # +1 is used to make sure that the whole data is used for the predictions.
+        self.eval_batch = self.tot_test_img / self.reduction / self.batch_size + 1
+
 
     def run(self):
         """Load accordingly the data.
@@ -52,9 +59,9 @@ class Loader(object):
         self.merge()
 
         # Loading the training data
-        container_train = self.run_load(self.new_train_dir)
+        container_train = self.run_load(self.new_train_dir, 'Training')
         # Loading the testing data
-        container_test = self.run_load(self.new_test_dir)
+        container_test = self.run_load(self.new_test_dir, 'Testing')
         return container_train, container_test
 
     def print_data_details(self):
@@ -89,18 +96,18 @@ class Loader(object):
         """
         self.new_train_dir = new_train_dir
         self.new_test_dir = new_test_dir
-        self.new_train_filenames = ['/'.join([self.new_train_dir, cl]) \
-                                    for cl in os.listdir(self.train_dir)]
-        self.new_test_filenames = ['/'.join([self.new_test_dir, cl]) \
-                                for cl in os.listdir(self.test_dir)]
+        self.new_train_filenames = ['/'.join([self.new_train_dir, 'files', cl]) \
+                        for cl in os.listdir('/'.join([self.train_dir,'files']))]
+        self.new_test_filenames = ['/'.join([self.new_test_dir, 'files', cl]) \
+                        for cl in os.listdir('/'.join([self.test_dir, 'files']))]
         self.new_zip = zip(self.new_train_filenames, self.new_test_filenames,\
                            self.classes)
 
     def subset(self):
         """Reduces by `reduction` the size of the train/test dataset."""
         # New paths containg the reduced dataset
-        new_train_dir = '/'.join([self.data_dir, ''.join(['train', str(self.reduction)])])
-        new_test_dir = '/'.join([self.data_dir, ''.join(['test', str(self.reduction)])])
+        new_train_dir = '/'.join([self.data_dir, 'train%d' % self.reduction])
+        new_test_dir = '/'.join([self.data_dir, 'test%d' % self.reduction])
 
         def check_exists(path):
                 """Check if the path already exists. If not, create it.
@@ -109,8 +116,9 @@ class Loader(object):
                     path: Path to test.
                 """
                 if not os.path.exists(path):
-                    print('Path %s is being created.' % path)
+                    print 'Path %s is created.' % path
                     os.makedirs(path)
+                    os.makedirs('/'.join([path, 'files']))
 
         # Does it exists?
         check_exists(new_train_dir)
@@ -124,10 +132,11 @@ class Loader(object):
 
             Args:
                 cls_filename (string): filename of the class file to create.
-                data_dir (string): directory containing the files to create.
+                to_dir (string): directory containing the files to create.
+                from_dir (string): directory containing the files to subset.
             """
-            to_obj = '/'.join([to_dir, cls_filename])
-            from_obj = '/'.join([from_dir, cls_filename])
+            to_obj = '/'.join([to_dir, 'files', cls_filename])
+            from_obj = '/'.join([from_dir, 'files', cls_filename])
             if not os.path.exists(to_obj):
                 print '\tCreating file %s.' % to_obj
                 in_f = open(from_obj, 'rb')
@@ -153,13 +162,13 @@ class Loader(object):
 
         # Create the subsets
         for f in self.new_zip:
-            train_f = f[0].split('/')[-1] # Get the train class file
-            test_f = f[1].split('/')[-1] # Get the test class file
+            train_f = f[0].split('/')[-1] # Get the train class file.
+            test_f = f[1].split('/')[-1] # Get the test class file.
             print 'Processing images of class %d' % f[2]
             create_subset(train_f, self.new_train_dir, self.train_dir)
             create_subset(test_f, self.new_test_dir, self.test_dir)
 
-    def create_idx(self):
+    def create_idx(self, category):
         """Create the indexes to shuffle the images.
 
         Args:
@@ -167,14 +176,17 @@ class Loader(object):
         Returns:
             dict: indexes for each class.
         """
-        nb_images = self.tot_train_img / self.reduction
+        if category=='train':
+            nb_images = self.tot_train_img / self.reduction
+        else:
+            nb_images = self.tot_test_img / self.reduction
         result = {}
         idx = list(range(nb_images))
         random.shuffle(idx)
 
         # Number of images per class. With reduction=10, nb=1000
-        # Indeed, nb_images=9000 et classes=9
-        nb = nb_images / len(self.classes)
+        # Indeed, nb_images=90000 when we consider classes=9
+        nb = nb_images / self.nb_labels
         for c in self.classes:
             result[c] = {}
             for i in range(nb):
@@ -190,29 +202,40 @@ class Loader(object):
         """Merge the files into one matrix.
         User need to know in advance how many images there are.
 
+        Args:
+            data_dir (string): directory from where merge the files.
+            category (string): either `train` or `test`.
         Returns:
-            ndarray: merged dataset
+            ndarray: merged dataset.
         """
         print 'Merging the classes for %s...' % category
-        nb = self.tot_train_img / self.reduction
+        if category=='train':
+            nb = self.tot_train_img / self.reduction
+        else:
+            nb = self.tot_test_img / self.reduction
         t0 = time.time() # Start
+        print 'Total number of images to merge %d' % nb
         # Only is tested data.pickle. Indeed, both files are created at
         # the same time. Impossible to have only one file.
-        if not os.path.exists('/'.join([data_dir, 'data.pickle'])):
+        if not os.path.exists('/'.join([data_dir, str(self.nb_labels), 'data.pickle'])):
+            # Create the directory containing the merged class data/labels.pickle.
+            os.makedirs('/'.join([data_dir, str(self.nb_labels)]))
             print '\tGenerating indexes...'
-            idx = self.create_idx()
+            idx = self.create_idx(category)
             print '\tIndexes generated.'
             # Result data and labels ndarray that is being created.
             data = np.zeros(shape=(nb, self.img_size, self.img_size))
-            labels = np.zeros(shape=(nb, len(self.classes)))
+            labels = np.zeros(shape=(nb, self.nb_labels))
             print '\tEmpty data and labels matrix created.'
 
-            filenames = os.listdir(data_dir) # List all class files.
+            # Sanity check in order to avoid incoherences in list length.
+            if '.DS_Store' in os.listdir(data_dir):
+                os.remove('/'.join([data_dir, 'files', '.DS_Store']))
+            # List all class files. Limited to the classes selected.
+            filenames = os.listdir('/'.join([data_dir, 'files']))[:self.nb_labels]
             for f in zip(filenames, self.classes): # Use to retrieve the indexes.
-                if f[0]=='.DS_Store':
-                    continue
                 print '\tProcessing file %s' % f[0]
-                in_f = open("/".join([data_dir, f[0]]), 'rb')
+                in_f = open("/".join([data_dir, 'files', f[0]]), 'rb')
                 images = pickle.load(in_f)
                 for i in range(len(images)):
                     ix = idx[f[1]][i] # Retrieve the new index
@@ -220,13 +243,15 @@ class Loader(object):
                     labels[ix,f[1]] = 1
                 print '\tEnf of processing of %s' % f[0]
             print 'Writing the new data...'
-            out_data_f = open('/'.join([data_dir, 'data.pickle']), 'wb')
+            out_data_f = open('/'.join([data_dir, str(self.nb_labels), \
+                                        'data.pickle']), 'wb')
             pickle.dump(data, out_data_f)
             out_data_f.close()
             del data
             print 'Data written.'
             print 'Writing the new labels...'
-            out_labels_f = open('/'.join([data_dir, 'labels.pickle']), 'wb')
+            out_labels_f = open('/'.join([data_dir, str(self.nb_labels), \
+                                          'labels.pickle']), 'wb')
             pickle.dump(labels, out_labels_f)
             out_labels_f.close()
             del labels
@@ -235,7 +260,7 @@ class Loader(object):
         else: # Files have already been created.
             print 'Files have already been created.'
 
-    def run_load(self, data_dir):
+    def run_load(self, data_dir, category):
         """Runner to load the data in memory.
 
         Returns:
@@ -251,13 +276,14 @@ class Loader(object):
                 labels: labels for train/test.
             """
             t0 = time.time()
-            print 'Loading data...'
-            data = load('/'.join([data_dir, 'data.pickle']))
-            print 'Data loaded in %.2f' % (time.time()-t0)
+            print 'Data from %s' % data_dir.split('/')[-1]
+            print '\tLoading data...'
+            data = load('/'.join([data_dir, str(self.nb_labels), 'data.pickle']))
+            print '\tData loaded in %.2f' % (time.time()-t0)
             t0 = time.time()
-            print 'Loading the labels...'
-            labels = load('/'.join([data_dir, 'labels.pickle']))
-            print 'Labels loaded in %.2f' % (time.time()-t0)
+            print '\tLoading the labels...'
+            labels = load('/'.join([data_dir, str(self.nb_labels), 'labels.pickle']))
+            print '\tLabels loaded in %.2f' % (time.time()-t0)
             return data, labels
 
         def load(path):
@@ -277,7 +303,7 @@ class Loader(object):
                 self.img_size = 128
                 self.nb_channels = 1
 
-            def reformat(self):
+            def reformat(self, category):
                 """Format the ndarray to fit into a tensorflow Tensor.
 
                 Args:
@@ -287,12 +313,12 @@ class Loader(object):
                 """
                 self.data = self.data.reshape(
                     (-1, self.img_size, self.img_size, self.nb_channels)).astype(np.float32)
-                print 'Training set', self.data.shape, 'labels', self.labels.shape
-                print 'Testing set', self.data.shape, 'labels', self.labels.shape
+                print '%s set' % category, self.data.shape, 'labels', self.labels.shape
 
         container = Container()
+        print 'Printing data_dir %s of category %s' % (data_dir, category)
         container.data, container.labels = load_data(data_dir)
-        container.reformat()
+        container.reformat(category)
         return container
 
 

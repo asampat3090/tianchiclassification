@@ -1,0 +1,2 @@
+model_checkpoint_path: "/Users/perezmunoz/Documents/clothes/tianchiclassification/src/logs/checkpoints/20160407-234527/ckpt"
+all_model_checkpoint_paths: "/Users/perezmunoz/Documents/clothes/tianchiclassification/src/logs/checkpoints/20160407-234527/ckpt"
