@@ -1,9 +1,7 @@
-@Shi @Benze Upload your script files of the processing data and convolutional neural networks for the tembusu cluster in this folder.
+This projects aims at classifying clothes among 9 classes using a convolutional neural network (CNN).
 
-In order to connect to the cluster, execute the following commands:
+The implementation is all done using Google's deep learning library TensorFlow.
 
-ssh soc_username@tembusu.comp.nus.edu.sg
+Prior running the file `run.sh` please make sure that you have installed the `requirements.txt` within a `virtualenv`.
 
-You access gateways machines names access0-4.
-
-From there, connect to compg53 computing resources through ssh.
+In order to run the training and evaluation of the CNN type `sh run.sh`.

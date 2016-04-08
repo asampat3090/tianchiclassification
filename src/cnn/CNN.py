@@ -21,10 +21,10 @@ class CNN(object):
         # Training batch input data placeholder.
         self.train_data = tf.placeholder(
             tf.float32, shape=(batch_size, image_size, image_size, num_channels),
-            name='training_data')
+            name='input_X')
         # Training batch input labels placeholder.
         self.train_labels = tf.placeholder(
-            tf.float32, shape=(batch_size, num_labels), name='training_labels')
+            tf.float32, shape=(batch_size, num_labels), name='input_Y')
 
         # First layer of convolutions INPUT -> [CONV -> RELU -> MAXPOOL] ->
         with tf.name_scope('CONV-1'):
