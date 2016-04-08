@@ -43,7 +43,7 @@ class Loader(object):
         self.eval_batch = self.tot_test_img / self.reduction / self.batch_size + 1
 
 
-    def run(self):
+    def run(self, category):
         """Load accordingly the data.
 
         Returns:
@@ -58,11 +58,12 @@ class Loader(object):
         # Merge datasets. self.subset() need to be run to get the new_paths
         self.merge()
 
-        # Loading the training data
-        container_train = self.run_load(self.new_train_dir, 'Training')
-        # Loading the testing data
-        container_test = self.run_load(self.new_test_dir, 'Testing')
-        return container_train, container_test
+        if category=='Training':
+            # Loading the training data.
+            return self.run_load(self.new_train_dir, 'Training')
+        else:
+            # Loading the testing data.
+            return self.run_load(self.new_test_dir, 'Testing')
 
     def print_data_details(self):
         """Print the number of images and dimensions for each class.

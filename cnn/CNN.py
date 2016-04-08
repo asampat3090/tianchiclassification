@@ -5,7 +5,7 @@ import numpy as np
 class CNN(object):
     """A CNN for image classification (Tianchi dataset)."""
     
-    def __init__(self, batch_size, image_size, num_channels, test_data,
+    def __init__(self, batch_size, image_size, num_channels,
                  num_labels, patch_size, depth, num_hidden):
         """
         Args:
@@ -13,7 +13,6 @@ class CNN(object):
             image_size (int): size of the width/height image, assumed equality.
             num_channels (int): RGB channels. For grayscale, num_channels=1.
             num_labels (int): number of labels/classes.
-            test_data (ndarray): testing data.
             patch_size (int): width/height of the convolutional filters.
             depth (int): number of filters to consider.
             num_hidden (int): number of hidden neurons.

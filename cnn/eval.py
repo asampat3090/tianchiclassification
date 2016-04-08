@@ -10,6 +10,9 @@ from CNN import CNN
 # tensorboard --logdir=logs/summaries/
 # Checkpoint directory logs/checkpoints/YYYYMMDD-HHMMSS/
 
+# Such file is evaluated from cnn/. Then need to handle relative paths.
+ckpt_dir = os.path.abspath('logs/checkpoints')
+
 # Define the model hyperparameters
 tf.flags.DEFINE_integer('batch_size', 16, """Number of images to process in
                                           a batch.""")
@@ -17,16 +20,16 @@ tf.flags.DEFINE_integer('image_size', 128, """Size of the images assuming width
                                           and height are equal.""")
 tf.flags.DEFINE_integer('num_channels', 1, """Data processed is grayscale.""")
 # Pick a number between 1 and 9.
-tf.flags.DEFINE_integer('num_labels', 9, """Number of classes.""")
+tf.flags.DEFINE_integer('num_labels', 4, """Number of classes.""")
 tf.flags.DEFINE_integer('patch_size', 5, """Filter size.""")
 tf.flags.DEFINE_integer('depth',     16, """Number of filters.""")
 tf.flags.DEFINE_integer('num_hidden', 64, """Number of hidden neurons.""")
 tf.flags.DEFINE_integer('num_epochs', 50, """Number of epochs used for training.""")
 tf.flags.DEFINE_integer("evaluate_every", 100, """Evaluate model after n steps.""")
-tf.flags.DEFINE_integer("checkpoint_every", 10, """Save model after n steps.""")
+tf.flags.DEFINE_integer("checkpoint_every", 5, """Save model after n steps.""")
 tf.flags.DEFINE_integer('reduction', 40, """1/reduction of the whole data.""")
 tf.flags.DEFINE_string('log_dir', '../logs/', """Logging directory.""")
-tf.flags.DEFINE_string('ckpt_dir', '../logs/checkpoints/', """Checkpoint logging
+tf.flags.DEFINE_string('ckpt_dir', ckpt_dir, """Checkpoint logging
                                                            directory.""")
 
 FLAGS = tf.flags.FLAGS
@@ -37,7 +40,27 @@ assert isinstance(FLAGS.num_labels, int), 'FLAGS.num_labels should be an int.'
 
 
 # Getting the checkpoint file.
-ckpt_file = tf.train.latest_checkpoint(FLAGS.ckpt_dir)
+# last_train = os.path.abspath('/'.join([ckpt_dir, os.listdir(FLAGS.ckpt_dir)[-1]]))
+# print last_train
+# ckpt_file = tf.train.latest_checkpoint(checkpoint_dir=last_train,
+#                                        latest_filename='ckpt')
+
+latest_checkpoint = os.path.abspath('/'.join([ckpt_dir,
+                                              os.listdir(FLAGS.ckpt_dir)[-1]]))
+
+# ckpt_file = tf.train.get_checkpoint_state(latest_checkpoint)
+# if ckpt_file and ckpt_file.model_checkpoint_path:
+#     pass
+# else:
+#     raise NameError('Checkpoint file could not be loaded.')
+
+ckpt_file = tf.train.latest_checkpoint(checkpoint_dir=latest_checkpoint)
+print 'ckpt_file'
+print ckpt_file
+
+print 'ckpt file'
+print ckpt_file
+print ckpt_file.__class__
 
 # Create the default graph.
 graph = tf.Graph()
@@ -52,13 +75,13 @@ with graph.as_default():
                     epoch=FLAGS.num_epochs)
 
     # Return the container with data/labels for train/test datasets.
-    ctrain, ctest = loader.run()
+    # ctest = loader.run(category='Testing')
 
     sess = tf.Session()
     with sess.as_default():
         # Load the saved meta graph and restore variables.
-        saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
-        saver.restore(sess, checkpoint_file)
+        saver = tf.train.import_meta_graph('{}.meta'.format(ckpt_file))
+        saver.restore(sess, ckpt_file)
 
         # Get the placeholders from the graph by name.
         input_x = graph.get_operation_by_name("input_X").outputs[0]
