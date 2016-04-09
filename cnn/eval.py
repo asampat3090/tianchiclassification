@@ -1,7 +1,9 @@
+from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import time
 import os
+import json
 
 from Loader import Loader
 from CNN import CNN
@@ -10,30 +12,39 @@ from CNN import CNN
 # tensorboard --logdir=logs/summaries/
 # Checkpoint directory logs/checkpoints/YYYYMMDD-HHMMSS/
 
-# Such file is evaluated from cnn/. Then need to handle relative paths.
-ckpt_dir = os.path.abspath('logs/checkpoints')
 
-# Define the model hyperparameters
-tf.flags.DEFINE_integer('batch_size', 16, """Number of images to process in
-                                          a batch.""")
-tf.flags.DEFINE_integer('image_size', 128, """Size of the images assuming width
-                                          and height are equal.""")
-tf.flags.DEFINE_integer('num_channels', 1, """Data processed is grayscale.""")
-# Pick a number between 1 and 9.
-tf.flags.DEFINE_integer('num_labels', 4, """Number of classes.""")
-tf.flags.DEFINE_integer('patch_size', 5, """Filter size.""")
-tf.flags.DEFINE_integer('depth',     16, """Number of filters.""")
-tf.flags.DEFINE_integer('num_hidden', 64, """Number of hidden neurons.""")
-tf.flags.DEFINE_integer('num_epochs', 50, """Number of epochs used for training.""")
-tf.flags.DEFINE_integer("evaluate_every", 100, """Evaluate model after n steps.""")
-tf.flags.DEFINE_integer("checkpoint_every", 5, """Save model after n steps.""")
-tf.flags.DEFINE_integer('reduction', 40, """1/reduction of the whole data.""")
-tf.flags.DEFINE_string('log_dir', '../logs/', """Logging directory.""")
-tf.flags.DEFINE_string('ckpt_dir', ckpt_dir, """Checkpoint logging
-                                                           directory.""")
+def load_hyper_parameters(log_dir):
+    # Define the model hyperparameters
+    with open(os.path.join(log_dir, 'heper_params')) as f:
+        params = json.loads(f.read())
+        tf.flags.DEFINE_integer('batch_size', params['batch_size'], """Number of images to process in
+                                                  a batch.""")
+        # Pick a number between 1 and 9.
+        tf.flags.DEFINE_integer('num_labels', params['num_labels'], """Number of classes.""")
+        tf.flags.DEFINE_integer('patch_size', params['patch_size'], """Filter size.""")
+        tf.flags.DEFINE_integer('depth',     params['depth'], """Number of filters.""")
+        tf.flags.DEFINE_integer('num_hidden', params['num_hidden'], """Number of hidden neurons.""")
+        tf.flags.DEFINE_integer('num_epochs', params['num_epochs'], """Number of epochs used for training.""")
+        tf.flags.DEFINE_integer('reduction', params['reduction'], """1/reduction of the whole data.""")
+
+        # the following are not needed for evaluation
+        # tf.flags.DEFINE_integer('image_size', params['image_size'], """Size of the images assuming width
+        #                                           and height are equal.""")
+        # tf.flags.DEFINE_integer('num_channels', params['num_channels'], """Data processed is grayscale.""")
+        #
+        # tf.flags.DEFINE_integer("evaluate_every", 100, """Evaluate model after n steps.""")
+        # tf.flags.DEFINE_integer("checkpoint_every", 5, """Save model after n steps.""")
+        # tf.flags.DEFINE_string('log_dir', '../logs/', """Logging directory.""")
+        # tf.flags.DEFINE_string('ckpt_dir', ckpt_dir, """Checkpoint logging
+        #                                                            directory.""")
+
+
+# Such file is evaluated from cnn/. Then need to handle relative paths.
+log_dir = os.path.abspath('logs/20160409-103358')
+ckpt_dir = os.path.abspath('logs/20160409-103358/checkpoints')
+load_hyper_parameters(log_dir)
 
 FLAGS = tf.flags.FLAGS
-
 # Sanity checks.
 assert 1<=FLAGS.num_labels<=9, 'Currently there are 9 classes handled [1..9].'
 assert isinstance(FLAGS.num_labels, int), 'FLAGS.num_labels should be an int.'
@@ -53,14 +64,14 @@ latest_checkpoint = os.path.abspath('/'.join([ckpt_dir,
 #     pass
 # else:
 #     raise NameError('Checkpoint file could not be loaded.')
-
-ckpt_file = tf.train.latest_checkpoint(checkpoint_dir=latest_checkpoint)
-print 'ckpt_file'
-print ckpt_file
-
-print 'ckpt file'
-print ckpt_file
-print ckpt_file.__class__
+#
+# ckpt_file = tf.train.latest_checkpoint(checkpoint_dir=latest_checkpoint)
+# print 'ckpt_file'
+# print ckpt_file
+#
+# print 'ckpt file'
+# print ckpt_file
+# print ckpt_file.__class__
 
 # Create the default graph.
 graph = tf.Graph()
@@ -75,7 +86,7 @@ with graph.as_default():
                     epoch=FLAGS.num_epochs)
 
     # Return the container with data/labels for train/test datasets.
-    # ctest = loader.run(category='Testing')
+    ctest = loader.run(category='Testing')
 
     sess = tf.Session()
     with sess.as_default():
@@ -109,5 +120,5 @@ with graph.as_default():
         test_length = ctest.labels.shape[0]
         # Accuracy
         acc = 100 * (correct_predictions / float(test_length))
-        print 'Total number of test examples: %d' % test_length
-        print 'Accuracy is %.2f%%' % acc
+        print('Total number of test examples: %d' % test_length)
+        print('Accuracy is %.2f%%' % acc)

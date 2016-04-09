@@ -1,7 +1,9 @@
+from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import time
 import os
+import json
 
 from Loader import Loader
 from CNN import CNN
@@ -38,16 +40,16 @@ assert isinstance(FLAGS.num_labels, int), 'FLAGS.num_labels should be an int.'
 
 def dump_parameters(file_path):
     with open(file_path, 'w') as f:
-        lines = []
-        lines.append('reduction: %d' % FLAGS.reduction)
-        lines.append('image_size: %d' % FLAGS.image_size)
-        lines.append('num_labels: %d' % FLAGS.num_labels)
-        lines.append('batch_size: %d' % FLAGS.batch_size)
-        lines.append('patch_size: %d' % FLAGS.patch_size)
-        lines.append('depth: %d' % FLAGS.depth)
-        lines.append('num_hidden: %d' % FLAGS.num_hidden)
-        lines.append('num_epochs: %d' % FLAGS.num_epochs)
-        f.writelines(lines)
+        params = {
+            'reduction': FLAGS.reduction,
+            'image_size': FLAGS.image_size,
+            'num_labels': FLAGS.num_labels,
+            'batch_size': FLAGS.batch_size,
+            'depth': FLAGS.depth,
+            'num_hidden': FLAGS.num_hidden,
+            'num_epochs': FLAGS.num_epochs
+        }
+        f.write(json.dumps(params))
 
 
 if __name__=='__main__':
@@ -63,7 +65,6 @@ if __name__=='__main__':
 
     # log the hyperparameters
     dump_parameters(os.path.join(out_dir, 'hyper_params'))
-
     # Data loader
     loader = Loader(classes=FLAGS.num_labels, reduction=FLAGS.reduction,
                     batch_size=FLAGS.batch_size, patch_size=FLAGS.patch_size,
@@ -121,12 +122,12 @@ if __name__=='__main__':
             # Initialize all variables
             init = tf.initialize_all_variables() # Init all variables/Ops
             sess.run(init)
-            print 'Variables Initialized.'
+            print('Variables Initialized.')
 
             # Training section.
             _t_start = time.clock()
             for epoch in range(FLAGS.num_epochs):
-                print '\rCurrently processing %d epoch...' % epoch
+                print('\rCurrently processing %d epoch...' % epoch)
                 for step in range(loader.num_batch):
                     # Compute the offset of the current step.
                     offset = (step * FLAGS.batch_size) % \
@@ -145,9 +146,9 @@ if __name__=='__main__':
                         feed_dict=feed_dict)
                     # Log the summaries for the current batch into log dir.
                     train_summary_writer.add_summary(summaries, cstep)
-            print 'Time used for training: %.2f s' % (time.clock() - _t_start)
+            print('Time used for training: %.2f s' % (time.clock() - _t_start))
             path = saver.save(sess, checkpoint_prefix)
-            print 'Model checkpoint saved into\n{}'.format(path)
+            print('Model checkpoint saved into\n{}'.format(path))
 
 
             # ***** Evaluation section ********
@@ -167,15 +168,15 @@ if __name__=='__main__':
             # Predicted classes.
             all_predictions = all_predictions.astype(int) # ndarray
             # Matches between the predictions and the real labels.
-            print 'Total number of validation examples given: %d' % all_predictions.shape[0]
+            print('Total number of validation examples given: %d' % all_predictions.shape[0])
             test_length = all_predictions.shape[0]
             if all_predictions.shape[0] != labels.shape[0]:
                 test_length = min(all_predictions.shape[0], labels.shape[0])
-                print 'Predictions are made on the first %d images!' % test_length
+                print('Predictions are made on the first %d images!' % test_length)
             # Which are the the good values.
             correct_predictions = np.sum(\
                             all_predictions[:test_length]==labels[:test_length])
             # Accuracy
             acc = 100 * (correct_predictions / float(test_length))
-            print 'Accuracy is %.2f%%' % acc
-            print 'Time used for validation %.2f s' % (time.clock() - _t_start)
+            print('Accuracy is %.2f%%' % acc)
+            print('Time used for validation %.2f s' % (time.clock() - _t_start))
