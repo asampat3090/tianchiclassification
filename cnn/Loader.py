@@ -12,7 +12,7 @@ class Loader(object):
     # Default values given.
     def __init__(self, classes=9, reduction=40, batch_size=16, patch_size=5,
                  depth=16, num_hidden=64, epoch=100):
-        self.data_dir = '/Volumes/Macintosh HD/Users/perezmunoz/Data/tianchi'
+        self.data_dir = '/Volumes/Macintosh HD/Users/Benze/Downloads/data'
         self.train_dir = '/'.join([self.data_dir, 'train1'])
         self.test_dir = '/'.join([self.data_dir, 'test1'])
         # Filenames templates
@@ -30,7 +30,7 @@ class Loader(object):
         self.nb_labels = classes
         self.reduction = reduction
         self.tot_train_img = 10000 * classes # Number of training images
-        self.tot_test_img = 2000 * classes # Number of testing images
+        self.tot_test_img = 1000 * classes # Number of testing images
         self.img_size = 128
         self.nb_channels = 1  # grayscale
         self.batch_size = batch_size
@@ -67,7 +67,7 @@ class Loader(object):
 
     def print_data_details(self):
         """Print the number of images and dimensions for each class.
-        
+
         Args:
             zip_filenames (zipped list): Path to pickle files containing
                 the files to process. Contain the test and train list.
@@ -321,7 +321,3 @@ class Loader(object):
         container.data, container.labels = load_data(data_dir)
         container.reformat(category)
         return container
-
-
-
-
