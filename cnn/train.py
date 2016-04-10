@@ -4,6 +4,7 @@ import numpy as np
 import time
 import os
 import json
+import sys
 
 from Loader import Loader
 from CNN import CNN
@@ -59,6 +60,8 @@ if __name__=='__main__':
     # Handling all variables summaries
     date = time.strftime('%Y%m%d-%H%M%S')
     out_dir = os.path.join(os.path.abspath('logs'), date)
+    print('output dir {}'.format(date), file=sys.stderr)
+
     # Create it if not exists
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -126,6 +129,7 @@ if __name__=='__main__':
 
             # Training section.
             _t_start = time.clock()
+            _t_wall_start = time.time()
             for epoch in range(FLAGS.num_epochs):
                 print('\rCurrently processing %d epoch...' % epoch)
                 for step in range(loader.num_batch):
@@ -146,14 +150,16 @@ if __name__=='__main__':
                         feed_dict=feed_dict)
                     # Log the summaries for the current batch into log dir.
                     train_summary_writer.add_summary(summaries, cstep)
-            print('Time used for training: %.2f s' % (time.clock() - _t_start))
+            print('Time used for training: %.2f s' % (time.clock() - _t_start), file=sys.stderr)
+            print('Time used for training:(wall) %d s' % (time.time() - _t_wall_start), file=sys.stderr)
             path = saver.save(sess, checkpoint_prefix)
-            print('Model checkpoint saved into\n{}'.format(path))
+            print('Model checkpoint saved into\n{}'.format(path), file=sys.stderr)
 
 
             # ***** Evaluation section ********
             # Collect all the predictions here.
             _t_start = time.clock()
+            _t_wall_start = time.time()
             all_predictions = [] # ndarray
             for batch in range(loader.eval_batch): # Number of batchs to process
                 offset = (batch * FLAGS.batch_size) % \
@@ -168,7 +174,7 @@ if __name__=='__main__':
             # Predicted classes.
             all_predictions = all_predictions.astype(int) # ndarray
             # Matches between the predictions and the real labels.
-            print('Total number of validation examples given: %d' % all_predictions.shape[0])
+            print('Total number of validation examples given: %d' % all_predictions.shape[0], file=sys.stderr)
             test_length = all_predictions.shape[0]
             if all_predictions.shape[0] != labels.shape[0]:
                 test_length = min(all_predictions.shape[0], labels.shape[0])
@@ -176,7 +182,10 @@ if __name__=='__main__':
             # Which are the the good values.
             correct_predictions = np.sum(\
                             all_predictions[:test_length]==labels[:test_length])
+            print(all_predictions)
+            print(labels)
             # Accuracy
             acc = 100 * (correct_predictions / float(test_length))
-            print('Accuracy is %.2f%%' % acc)
-            print('Time used for validation %.2f s' % (time.clock() - _t_start))
+            print('Accuracy is %.2f%%' % acc, file=sys.stderr)
+            print('Time used for validation %.2f s' % (time.clock() - _t_start), file=sys.stderr)
+            print('Time used for validation (wall)  %d s' % (time.time() - _t_wall_start), file=sys.stderr)
