@@ -13,6 +13,7 @@ PIXEL_DEPTH = 255.0
 TRAINING_SIZE = 10
 TEST_SIZE = 1
 
+
 def read_bounding_box(path):
 	with open(path) as f:
 		line = f.readline()
@@ -27,7 +28,7 @@ def process_image(class_folder, image):
 	box_file_path = os.path.join(rect_folder, class_folder, image_id + '.txt')
 	box = read_bounding_box(box_file_path)
 	# box_img = origin_image.copy()
-	cv2.rectangle(box_img, (box[0], box[1]), (box[0]+box[2], box[1]+box[3]), (255,0, 0))
+	cv2.rectangle(box_img, (box[0], box[1]), (box[0] + box[2], box[1] + box[3]), (255, 0, 0))
 	# plt.imsave('box.png', box_img)
 	crop_img = origin_image[box[1]: box[1] + box[3], box[0]: box[0] + box[2]]
 	# plt.imsave('crop.png', crop_img)
