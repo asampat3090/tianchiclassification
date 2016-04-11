@@ -11,7 +11,7 @@ from CNN import CNN
 # from eval import
 
 FASA_EXEC = '/Users/Benze/Documents/NUS/multimedia computing/tianchiclassification/preprocess/FASA/FASA'
-ckpt_dir = os.path.abspath('/Users/Benze/Documents/NUS/multimedia computing/tianchiclassification/checkpoints')
+# ckpt_dir = os.path.abspath('/Users/Benze/Documents/NUS/multimedia computing/tianchiclassification/model/checkpoints')
 truth_file = os.path.abspath('/Users/Benze/Documents/NUS/multimedia computing/tianchiclassification/test_app/truth.json')
 
 PIXEL_DEPTH = 255.0
@@ -38,6 +38,13 @@ LABLE_DICT = {
     7: 'bag',
     8: 'skirt'
 }
+
+
+def load_hyper_parameters(hyper_param_file):
+    # Define the model hyper parameters
+    with open(hyper_param_file) as f:
+        params = json.loads(f.read())
+        return params
 
 
 def load_truth(truth_file):
@@ -106,17 +113,23 @@ def generate_data(input_folder, image_size):
     return data, images, boxes
 
 
-def annotate_image(image_file, box, label, input_folder, output_folder):
+def annotate_image(correct, image_file, box, true_label, predict_label, input_folder, output_folder):
     image = cv2.imread(os.path.join(input_folder, image_file))
     cv2.rectangle(image, (box[0], box[1]), (box[0] + box[2], box[1] + box[3]), (0, 0, 255))
     # Write some Text
     font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(image, label, (20, 30), font, 1, (0, 0, 255), 2)
+    if correct:
+        cv2.putText(image, predict_label, (20, 30), font, 1, (0, 255, 0), 2)
+    else:
+        cv2.putText(image, predict_label + '({})'.format(true_label), (20, 30), font, 1, (0, 0, 255), 2)
     cv2.imwrite(os.path.join(output_folder, image_file), image)
 
 
 def main():
     args = parse_args()
+    model_folder = os.path.abspath(args.model_folder)
+    ckpt_dir = os.path.join(model_folder, 'checkpoints')
+    hyper_params = load_hyper_parameters(os.path.join(ckpt_dir, 'hyper_params'))
 
     # generate data representation for images
     image_data, images, boxes = generate_data(args.input_folder, args.image_size)
@@ -136,11 +149,11 @@ def main():
 
         cnn = CNN(batch_size=batch_size,
                   image_size=args.image_size,
-                  num_channels=1,
-                  num_labels=9,
-                  patch_size=5,
-                  depth=16,
-                  num_hidden=64)
+                  num_channels=hyper_params['num_channels'],
+                  num_labels=hyper_params['num_labels'],
+                  patch_size=hyper_params['patch_size'],
+                  depth=hyper_params['depth'],
+                  num_hidden=hyper_params['num_hidden'])
         saver = tf.train.Saver()  # defaults to saving all variables - in this case w and b
 
         with sess.as_default():
@@ -167,11 +180,12 @@ def main():
 
             for img, prediction, box in zip(images, batch_predictions, boxes):
                 predict_label = LABLE_DICT[prediction]
-                annotate_image(img, box, predict_label, args.input_folder, args.output_folder)
                 if truth_dict[img] == predict_label:
+                    annotate_image(True, img, box, truth_dict[img], predict_label, args.input_folder, args.output_folder)
                     num_of_truth += 1
                     print(img + ": " + predict_label + ' true')
                 else:
+                    annotate_image(False, img, box, truth_dict[img], predict_label, args.input_folder, args.output_folder)
                     print(img + ": " + predict_label + ' false')
             print("total number of true prediction: {}".format(num_of_truth))
 

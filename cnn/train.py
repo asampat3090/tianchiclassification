@@ -114,7 +114,7 @@ if __name__ == '__main__':
                 sess.graph.as_graph_def(add_shapes=True))
 
             # Checkpoint directory.
-            checkpoint_dir =  os.path.relpath("checkpoints")
+            checkpoint_dir = os.path.relpath("checkpoints")
             checkpoint_prefix = os.path.join(checkpoint_dir, 'ckpt')
             if not os.path.exists(checkpoint_dir):
                 os.makedirs(checkpoint_dir)

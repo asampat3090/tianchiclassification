@@ -1,9 +1,7 @@
 import os
-import sys
 import cv2
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
 
 output_folder = './output'
 image_folder = './images'

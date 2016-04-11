@@ -11,9 +11,7 @@ from CNN import CNN
 # Such file is evaluated from cnn/. Then need to handle relative paths.
 test_dir = os.path.abspath('/home/ubuntu/output32/valid1/files/')
 log_dir = os.path.abspath('/home/ubuntu/logs/20160411-061805/')
-#ckpt_dir = os.path.join(log_dir, 'checkpoints')
 ckpt_dir = os.path.abspath('/home/ubuntu/checkpoints_r1_32/')
-#ckpt_file = os.path.join(ckpt_dir, 'ckpt')
 
 
 # Command shell to run tensorboard from ..src/cnn/
@@ -60,6 +58,7 @@ def load_test_data(data_dir, num_of_image_per_class, image_size, num_of_class):
     container.reformat()
     return container
 
+
 def load_hyper_parameters(hyper_param_file):
     # Define the model hyperparameters
     with open(hyper_param_file) as f:
@@ -85,38 +84,14 @@ def load_hyper_parameters(hyper_param_file):
     #                                                            directory.""")
 
 
-load_hyper_parameters(os.path.join(log_dir, 'hyper_params'))
+load_hyper_parameters(os.path.join(ckpt_dir, 'hyper_params'))
 
 FLAGS = tf.flags.FLAGS
 # Sanity checks.
 assert 1 <= FLAGS.num_labels <= 9, 'Currently there are 9 classes handled [1..9].'
 assert isinstance(FLAGS.num_labels, int), 'FLAGS.num_labels should be an int.'
 
-# Getting the checkpoint file.
-# last_train = os.path.abspath('/'.join([ckpt_dir, os.listdir(FLAGS.ckpt_dir)[-1]]))
-# print last_train
-# ckpt_file = tf.train.latest_checkpoint(checkpoint_dir=last_train,
-#                                        latest_filename='ckpt')
 
-# latest_checkpoint = os.path.abspath('/'.join([ckpt_dir,
-# 											  os.listdir(FLAGS.ckpt_dir)[-1]]))
-
-# ckpt_file = tf.train.get_checkpoint_state(latest_checkpoint)
-# if ckpt_file and ckpt_file.model_checkpoint_path:
-#     pass
-# else:
-#     raise NameError('Checkpoint file could not be loaded.')
-#
-# ckpt_file = tf.train.latest_checkpoint(checkpoint_dir=latest_checkpoint)
-# print 'ckpt_file'
-# print ckpt_file
-#
-# print 'ckpt file'
-# print ckpt_file
-# print ckpt_file.__class__
-
-
-# Create the default graph.
 graph = tf.Graph()
 with graph.as_default():
     # Set seed for repoducible results
