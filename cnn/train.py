@@ -16,7 +16,7 @@ from CNN import CNN
 # Define the model hyperparameters
 tf.flags.DEFINE_integer('batch_size', 16, """Number of images to process in
                                           a batch.""")
-tf.flags.DEFINE_integer('image_size', 128, """Size of the images assuming width
+tf.flags.DEFINE_integer('image_size', 32, """Size of the images assuming width
                                           and height are equal.""")
 tf.flags.DEFINE_integer('num_channels', 1, """Data processed is grayscale.""")
 # Pick a number between 1 and 9.
@@ -24,10 +24,10 @@ tf.flags.DEFINE_integer('num_labels', 9, """Number of classes.""")
 tf.flags.DEFINE_integer('patch_size', 5, """Filter size.""")
 tf.flags.DEFINE_integer('depth', 16, """Number of filters.""")
 tf.flags.DEFINE_integer('num_hidden', 64, """Number of hidden neurons.""")
-tf.flags.DEFINE_integer('num_epochs', 5, """Number of epochs used for training.""")
+tf.flags.DEFINE_integer('num_epochs', 10, """Number of epochs used for training.""")
 tf.flags.DEFINE_integer("evaluate_every", 10, """Evaluate model after n steps.""")
 tf.flags.DEFINE_integer("checkpoint_every", 10, """Save model after n steps.""")
-tf.flags.DEFINE_integer('reduction', 40, """1/reduction of the whole data.""")
+tf.flags.DEFINE_integer('reduction', 4, """1/reduction of the whole data.""")
 tf.flags.DEFINE_string('log_dir', '/logs/', """Logging directory.""")
 tf.flags.DEFINE_string('ckpt_dir', '/logs/checkpoints/', """Checkpoint logging
                                                            directory.""")
