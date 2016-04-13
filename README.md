@@ -14,10 +14,10 @@ In order to evaluate the latest trained model, type `python cnn/train.py`.
 
 More compact, you can just run `sh launch.sh` and add the additional flags you want to set.
 
-Trained models are saved in the model/checkpoints folder. The hyper_params file contains the hyper-parameters used to train the model saved.
+Trained models are saved in the `checkpoints/` folder. The `hyper_params.json` file contains the hyper-parameters used to train the model saved.
 
 The summaries used by Tensorboard are saved in model/logs/summaries folder.
 
-In order to visualise the results in Tensorboard, type within the TensorFlow environnement, `tensorboard --logdir=model/logs/summaries`.
+In order to visualise the results in Tensorboard, type within the TensorFlow environnement, `tensorboard --logdir=logs/`.
 
-The file cnn/app.py is a small app that restore the model stored in model/checkpoints and test the data contained in test_app/images/.
+The file cnn/app.py is a small app that restore the model stored in model/checkpoints and test the data contained in `test_app/images/`.

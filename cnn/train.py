@@ -163,38 +163,38 @@ if __name__ == '__main__':
             path = saver.save(sess, checkpoint_prefix)
             print('Model checkpoint saved into\n{}'.format(path), file=sys.stderr)
 
-            # ***** Evaluation section ********
-            # Collect all the predictions here.
-            _t_start = time.clock()
-            _t_wall_start = time.time()
-            all_predictions = []  # ndarray
-            for batch in range(loader.eval_batch):  # Number of batchs to process
-                offset = (batch * FLAGS.batch_size) % \
-                         (ctest.labels.shape[0] - FLAGS.batch_size)
-                batch_data = ctest.data[offset:(offset + FLAGS.batch_size), :, :, :]
-                feed_dict = {cnn.train_data: batch_data}
-                batch_predictions = sess.run(cnn.predictions, feed_dict)
-                all_predictions = np.concatenate([all_predictions, batch_predictions])
+            # # ***** Evaluation section ********
+            # # Collect all the predictions here.
+            # _t_start = time.clock()
+            # _t_wall_start = time.time()
+            # all_predictions = []  # ndarray
+            # for batch in range(loader.eval_batch):  # Number of batchs to process
+            #     offset = (batch * FLAGS.batch_size) % \
+            #              (ctest.labels.shape[0] - FLAGS.batch_size)
+            #     batch_data = ctest.data[offset:(offset + FLAGS.batch_size), :, :, :]
+            #     feed_dict = {cnn.train_data: batch_data}
+            #     batch_predictions = sess.run(cnn.predictions, feed_dict)
+            #     all_predictions = np.concatenate([all_predictions, batch_predictions])
 
-            # Class labels of the images.
-            labels = np.argmax(ctest.labels, 1)
-            # Predicted classes.
-            all_predictions = all_predictions.astype(int)  # ndarray
-            # Matches between the predictions and the real labels.
-            print('Total number of validation examples given: %d' % \
-                                        all_predictions.shape[0], file=sys.stderr)
-            test_length = all_predictions.shape[0]
-            if all_predictions.shape[0] != labels.shape[0]:
-                test_length = min(all_predictions.shape[0], labels.shape[0])
-                print('Predictions are made on the first %d images!' % test_length)
-            # Which are the good values.
-            correct_predictions = np.sum(
-                all_predictions[:test_length] == labels[:test_length])
-            # print(all_predictions)
-            # print(labels)
+            # # Class labels of the images.
+            # labels = np.argmax(ctest.labels, 1)
+            # # Predicted classes.
+            # all_predictions = all_predictions.astype(int)  # ndarray
+            # # Matches between the predictions and the real labels.
+            # print('Total number of validation examples given: %d' % \
+            #                             all_predictions.shape[0], file=sys.stderr)
+            # test_length = all_predictions.shape[0]
+            # if all_predictions.shape[0] != labels.shape[0]:
+            #     test_length = min(all_predictions.shape[0], labels.shape[0])
+            #     print('Predictions are made on the first %d images!' % test_length)
+            # # Which are the good values.
+            # correct_predictions = np.sum(
+            #     all_predictions[:test_length] == labels[:test_length])
+            # # print(all_predictions)
+            # # print(labels)
 
-            # Accuracy
-            acc = 100 * (correct_predictions / float(test_length))
-            print('Accuracy is %.2f%%' % acc, file=sys.stderr)
-            print('Time used for validation %.2f s' % (time.clock() - _t_start), file=sys.stderr)
-            print('Time used for validation (wall)  %d s' % (time.time() - _t_wall_start), file=sys.stderr)
+            # # Accuracy
+            # acc = 100 * (correct_predictions / float(test_length))
+            # print('Accuracy is %.2f%%' % acc, file=sys.stderr)
+            # print('Time used for validation %.2f s' % (time.clock() - _t_start), file=sys.stderr)
+            # print('Time used for validation (wall)  %d s' % (time.time() - _t_wall_start), file=sys.stderr)
