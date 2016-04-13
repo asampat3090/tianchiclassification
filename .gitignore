@@ -8,3 +8,4 @@
 *.gz
 *.blg
 *.log
+data/*

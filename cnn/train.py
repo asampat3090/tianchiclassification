@@ -13,6 +13,9 @@ from CNN import CNN
 # tensorboard --logdir=logs/summaries/
 # Checkpoint directory logs/checkpoints/YYYYMMDD-HHMMSS/
 
+tf.flags.DEFINE_string('tianchi',
+                       '/Users/perezmunoz/Documents/clothes/tianchiclassification',
+                       """Project's repository.""")
 # Define the model hyperparameters
 tf.flags.DEFINE_integer('batch_size', 16, """Number of images to process in
                                           a batch.""")
@@ -24,13 +27,13 @@ tf.flags.DEFINE_integer('num_labels', 9, """Number of classes.""")
 tf.flags.DEFINE_integer('patch_size', 5, """Filter size.""")
 tf.flags.DEFINE_integer('depth', 16, """Number of filters.""")
 tf.flags.DEFINE_integer('num_hidden', 64, """Number of hidden neurons.""")
-tf.flags.DEFINE_integer('num_epochs', 10, """Number of epochs used for training.""")
-tf.flags.DEFINE_integer("evaluate_every", 10, """Evaluate model after n steps.""")
-tf.flags.DEFINE_integer("checkpoint_every", 10, """Save model after n steps.""")
-tf.flags.DEFINE_integer('reduction', 4, """1/reduction of the whole data.""")
-tf.flags.DEFINE_string('log_dir', '/logs/', """Logging directory.""")
-tf.flags.DEFINE_string('ckpt_dir', '/logs/checkpoints/', """Checkpoint logging
-                                                           directory.""")
+tf.flags.DEFINE_integer('num_epochs', 5, """Number of epochs used for training.""")
+tf.flags.DEFINE_integer('reduction', 1, """1/reduction of the whole data.""")
+# With batch 16, reduction 1, there are 5625 steps at each epoch.
+# So each 25 steps, summaries are logged. Thus, per epoch there are 225 logs.
+tf.flags.DEFINE_string('log_every', 100,
+                                    """Checkpoint logging frequency.""")
+
 
 FLAGS = tf.flags.FLAGS
 
@@ -40,6 +43,7 @@ assert isinstance(FLAGS.num_labels, int), 'FLAGS.num_labels should be an int.'
 
 
 def dump_parameters(file_path):
+    """Dump the hyperparameters used to train the current models in checkpoints/"""
     with open(file_path, 'w') as f:
         params = {
             'reduction': FLAGS.reduction,
@@ -50,26 +54,33 @@ def dump_parameters(file_path):
             'depth': FLAGS.depth,
             'num_hidden': FLAGS.num_hidden,
             'num_epochs': FLAGS.num_epochs,
-            'num_channels': FLAGS.num_channels
+            'num_channels': FLAGS.num_channels,
+            'log_every': FLAGS.log_every
         }
-        f.write(json.dumps(params))
+        f.write(json.dumps(params, indent=4))
 
 
 if __name__ == '__main__':
     # Set seed for repoducible results
     np.random.seed(10)
 
-    # Handling all variables summaries
+    # Log summaries directory.
     date = time.strftime('%Y%m%d-%H%M%S')
-    out_dir = os.path.join(os.path.abspath('logs'), date)
-    print('output dir {}'.format(date), file=sys.stderr)
+    log_out = os.path.join(FLAGS.tianchi, 'logs' , date)
+    print('Logs output directory {}'.format(log_out), file=sys.stderr)
 
-    # Create it if not exists
-    if not os.path.exists(out_dir):
-        os.makedirs(out_dir)
+    # Create it if not exists.
+    if not os.path.exists(log_out):
+        os.makedirs(log_out)
 
-    # log the hyperparameters
-    dump_parameters(os.path.join(out_dir, 'hyper_params'))
+    # Checkpoint directory.
+    checkpoint_dir = os.path.join(FLAGS.tianchi, 'checkpoints', date)
+    checkpoint_prefix = os.path.join(checkpoint_dir, 'ckpt')
+    if not os.path.exists(checkpoint_dir):
+        os.makedirs(checkpoint_dir)
+
+    # Log the hyperparameters.
+    dump_parameters(os.path.join(checkpoint_dir, 'hyper_params.json'))
     # Data loader
     loader = Loader(classes=FLAGS.num_labels, reduction=FLAGS.reduction,
                     batch_size=FLAGS.batch_size, patch_size=FLAGS.patch_size,
@@ -85,6 +96,7 @@ if __name__ == '__main__':
     with tf.Graph().as_default():
         sess = tf.Session()
         with sess.as_default():  # Run the default session.
+            # Create the network.
             cnn = CNN(batch_size=FLAGS.batch_size,
                       image_size=FLAGS.image_size,
                       num_channels=FLAGS.num_channels,
@@ -104,26 +116,19 @@ if __name__ == '__main__':
 
             # Loss and accuracy summaries
             loss_summary = tf.scalar_summary("Loss", cnn.loss)
-            acc_summary = tf.scalar_summary("Accuracy", cnn.accuracy)  # TODO
+            acc_summary = tf.scalar_summary("Accuracy", cnn.accuracy)
 
             # Train Summaries
             train_summary_op = tf.merge_summary([loss_summary, acc_summary])
-            train_summary_dir = os.path.join(out_dir, "summaries")
             train_summary_writer = tf.train.SummaryWriter(
-                train_summary_dir,
-                sess.graph.as_graph_def(add_shapes=True))
-
-            # Checkpoint directory.
-            checkpoint_dir = os.path.relpath("checkpoints")
-            checkpoint_prefix = os.path.join(checkpoint_dir, 'ckpt')
-            if not os.path.exists(checkpoint_dir):
-                os.makedirs(checkpoint_dir)
+                                    log_out,
+                                    sess.graph.as_graph_def(add_shapes=True))
 
             # Stores the variables.
             saver = tf.train.Saver(tf.all_variables())
 
-            # Initialize all variables
-            init = tf.initialize_all_variables()  # Init all variables/Ops
+            # Initialize all variables.
+            init = tf.initialize_all_variables()  # Init all variables/Ops.
             sess.run(init)
             print('Variables Initialized.')
 
@@ -148,10 +153,13 @@ if __name__ == '__main__':
                         fetches=[train_op, global_step, train_summary_op,
                                  cnn.loss, cnn.accuracy],
                         feed_dict=feed_dict)
-                    # Log the summaries for the current batch into log dir.
-                    train_summary_writer.add_summary(summaries, cstep)
-            print('Time used for training: %.2f s' % (time.clock() - _t_start), file=sys.stderr)
-            print('Time used for training:(wall) %d s' % (time.time() - _t_wall_start), file=sys.stderr)
+                    if (cstep % FLAGS.log_every) == 0:
+                        # Log the summaries for the current batch into log dir.
+                        train_summary_writer.add_summary(summaries, cstep)
+            print('Time used for training: %.2f s' % (time.clock() - _t_start),
+                                                      file=sys.stderr)
+            print('Time used for training: (wall) %d s' % (time.time() - _t_wall_start),
+                                                           file=sys.stderr)
             path = saver.save(sess, checkpoint_prefix)
             print('Model checkpoint saved into\n{}'.format(path), file=sys.stderr)
 
@@ -173,16 +181,18 @@ if __name__ == '__main__':
             # Predicted classes.
             all_predictions = all_predictions.astype(int)  # ndarray
             # Matches between the predictions and the real labels.
-            print('Total number of validation examples given: %d' % all_predictions.shape[0], file=sys.stderr)
+            print('Total number of validation examples given: %d' % \
+                                        all_predictions.shape[0], file=sys.stderr)
             test_length = all_predictions.shape[0]
             if all_predictions.shape[0] != labels.shape[0]:
                 test_length = min(all_predictions.shape[0], labels.shape[0])
                 print('Predictions are made on the first %d images!' % test_length)
-            # Which are the the good values.
+            # Which are the good values.
             correct_predictions = np.sum(
                 all_predictions[:test_length] == labels[:test_length])
-            print(all_predictions)
-            print(labels)
+            # print(all_predictions)
+            # print(labels)
+
             # Accuracy
             acc = 100 * (correct_predictions / float(test_length))
             print('Accuracy is %.2f%%' % acc, file=sys.stderr)

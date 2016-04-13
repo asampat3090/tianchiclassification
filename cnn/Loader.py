@@ -13,7 +13,7 @@ class Loader(object):
     # Default values given.
     def __init__(self, classes=9, reduction=40, batch_size=16, patch_size=5, img_size=128,
                  depth=16, num_hidden=64, epoch=100):
-        self.data_dir = '/home/benze/dev/media/output32'
+        self.data_dir = '/Users/perezmunoz/Documents/clothes/tianchiclassification/data'
         self.train_dir = '/'.join([self.data_dir, 'train1'])
         self.test_dir = '/'.join([self.data_dir, 'test1'])
         # Filenames templates
@@ -232,7 +232,7 @@ class Loader(object):
             print('\tEmpty data and labels matrix created.')
 
             # Sanity check in order to avoid incoherences in list length.
-            if '.DS_Store' in os.listdir(data_dir):
+            if '.DS_Store' in os.listdir(os.path.join(data_dir, 'files')):
                 os.remove('/'.join([data_dir, 'files', '.DS_Store']))
             # List all class files. Limited to the classes selected.
             filenames = os.listdir('/'.join([data_dir, 'files']))[:self.nb_labels]
@@ -280,11 +280,11 @@ class Loader(object):
             t0 = time.time()
             print('Data from %s' % data_dir.split('/')[-1])
             print('\tLoading data...')
-            data = load('/'.join([data_dir, str(self.nb_labels), 'data.npy']))
+            data = load(os.path.join(data_dir, str(self.nb_labels), 'data.npy'))
             print('\tData loaded in %.2f' % (time.time() - t0))
             t0 = time.time()
             print('\tLoading the labels...')
-            labels = load('/'.join([data_dir, str(self.nb_labels), 'labels.npy']))
+            labels = load(os.path.join(data_dir, str(self.nb_labels), 'labels.npy'))
             print('\tLabels loaded in %.2f' % (time.time() - t0))
             return data, labels
 

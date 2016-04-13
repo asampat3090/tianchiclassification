@@ -1,0 +1,11 @@
+{
+    "num_hidden": 64, 
+    "reduction": 1, 
+    "num_channels": 1, 
+    "image_size": 32, 
+    "patch_size": 5, 
+    "num_epochs": 5, 
+    "num_labels": 9, 
+    "depth": 16, 
+    "batch_size": 16
+}

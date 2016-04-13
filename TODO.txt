@@ -1,0 +1,21 @@
+Complete the [] when part is finished to [DONE]
+
+[] Web App
+Flask Web App thats upload an image, predicts the image class after restoring the
+model, display the image with predicted label
+
+[] Modify Abstract/Introduction to include the publications on the drive (Yahoo)
+
+[] Cross-Validation
+Modify the network in order to cross-validate it
+
+[] Increase network
+Increase the size of the network
+
+[] Dropout
+Check if dropout regularization can be included
+
+[] Slides
+@Shi:   introduction, context
+@Ben:   demo/data preprocessing
+@Juan:  modeling

@@ -8,85 +8,59 @@ import json
 from Loader import Loader
 from CNN import CNN
 
-# Such file is evaluated from cnn/. Then need to handle relative paths.
-test_dir = os.path.abspath('/home/ubuntu/output32/valid1/files/')
-log_dir = os.path.abspath('/home/ubuntu/logs/20160411-061805/')
-ckpt_dir = os.path.abspath('/home/ubuntu/checkpoints_r1_32/')
-
+# Main repository. Juan's path, do not remove (create new one for youself).
+TIANCHI = '/Users/perezmunoz/Documents/clothes/tianchiclassification'
 
 # Command shell to run tensorboard from ..src/cnn/
-# tensorboard --logdir=logs/summaries/
-# Checkpoint directory logs/checkpoints/YYYYMMDD-HHMMSS/
+# tensorboard --logdir=logs/YYYYMMDD-HHMMSS/
+# Checkpoint directory checkpoints/YYYYMMDD-HHMMSS/
 
+def path_last_model(path, most_recent=True):
+    """Get the path of the directory of a saved model.
 
-def load_test_data(data_dir, num_of_image_per_class, image_size, num_of_class):
-    class Container(object):
-        """Object containing the data and labels."""
-
-        def __init__(self, img_size=128):
-            self.img_size = img_size
-            self.nb_channels = 1
-
-        def reformat(self):
-            """Format the ndarray to fit into a tensorflow Tensor.
-
-            Args:
-                container (Container): contains the data and labels objects (ndarray).
-            Returns:
-                container: formatted data/labels ndarray.
-            """
-            self.data = self.data.reshape(
-                (-1, self.img_size, self.img_size, self.nb_channels)).astype(np.float32)
-
-        # print('%s set' % category, self.data.shape, 'labels', self.labels.shape)
-
-    total_images = num_of_image_per_class * num_of_class
-
-    data = np.zeros(shape=(total_images, image_size, image_size))
-    labels = np.zeros(shape=(total_images, num_of_class))
-
-    for label, data_file in enumerate(os.listdir(data_dir)):
-        with open(os.path.join(data_dir, data_file), 'rb') as f:
-            offset = num_of_image_per_class * label
-            image_data = np.load(f)
-            data[offset: offset + num_of_image_per_class, :, :] = image_data[0:num_of_image_per_class, :, :]
-            labels[offset: offset + num_of_image_per_class, label] = 1
-
-    container = Container(image_size)
-    container.data = data
-    container.labels = labels
-    container.reformat()
-    return container
-
+    most_recent (bool): indicates whether the most recent trained model is restored.
+    path (string): directory path of the model to restore.
+                   The format of this file is YYYYMMDD-HHMMSS.
+    """
+    ckpts = os.path.join(TIANCHI, 'checkpoints')
+    if most_recent:
+        return os.path.join(ckpts, os.listdir(ckpts)[-1])
+    else:
+        assert os.path.isfile(os.path.join(ckpts, path)), \
+                            'Make sure that you train a model on %s' % path
+        return os.path.join(ckpts, path)
 
 def load_hyper_parameters(hyper_param_file):
-    # Define the model hyperparameters
-    with open(hyper_param_file) as f:
-        params = json.loads(f.read())
-        tf.flags.DEFINE_integer('batch_size', params['batch_size'], """Number of images to process in a batch.""")
-        tf.flags.DEFINE_integer('num_labels', params['num_labels'], """Number of classes.""")
-        tf.flags.DEFINE_integer('patch_size', params['patch_size'], """Filter size.""")
-        tf.flags.DEFINE_integer('depth', params['depth'], """Number of filters.""")
-        tf.flags.DEFINE_integer('num_hidden', params['num_hidden'], """Number of hidden neurons.""")
-        tf.flags.DEFINE_integer('num_epochs', params['num_epochs'], """Number of epochs used for training.""")
-        tf.flags.DEFINE_integer('reduction', params['reduction'], """1/reduction of the whole data.""")
-        tf.flags.DEFINE_integer('image_size', params['image_size'],
-                                """Size of the images assuming width and height are equal.""")
-        tf.flags.DEFINE_integer('num_channels', params['num_channels'], """Data processed is grayscale.""")
-
-    # the following are not needed for evaluation
-
-    #
-    # tf.flags.DEFINE_integer("evaluate_every", 100, """Evaluate model after n steps.""")
-    # tf.flags.DEFINE_integer("checkpoint_every", 5, """Save model after n steps.""")
-    # tf.flags.DEFINE_string('log_dir', '../logs/', """Logging directory.""")
-    # tf.flags.DEFINE_string('ckpt_dir', ckpt_dir, """Checkpoint logging
-    #                                                            directory.""")
-
-
-load_hyper_parameters(os.path.join(ckpt_dir, 'hyper_params'))
+    """Load the hyperparameters."""
+    f = open(hyper_param_file, 'rb')
+    params = json.loads(f.read())
+    tf.flags.DEFINE_string('tianchi', TIANCHI, """Project's repository.""")
+    tf.flags.DEFINE_integer('batch_size', params['batch_size'],
+                                """Number of mages to process in a batch.""")
+    tf.flags.DEFINE_integer('num_labels', params['num_labels'],
+                                """Number of classes.""")
+    tf.flags.DEFINE_integer('patch_size', params['patch_size'],
+                                """Filter size.""")
+    tf.flags.DEFINE_integer('depth', params['depth'],
+                                """Number of filters.""")
+    tf.flags.DEFINE_integer('num_hidden', params['num_hidden'],
+                                """Number of hidden neurons.""")
+    tf.flags.DEFINE_integer('num_epochs', params['num_epochs'],
+                                """Number of epochs used for training.""")
+    tf.flags.DEFINE_integer('reduction', params['reduction'],
+                                """1/reduction of the whole data.""")
+    tf.flags.DEFINE_integer('image_size', params['image_size'],
+                                """Size of the images assuming width and height
+                                are equal.""")
+    tf.flags.DEFINE_integer('num_channels', params['num_channels'],
+                                """Data processed is grayscale.""")
 
 FLAGS = tf.flags.FLAGS
+
+# Load the most recent saved model.
+ckpt_dir = path_last_model(path=None)
+load_hyper_parameters(os.path.join(ckpt_dir, 'hyper_params.json'))
+
 # Sanity checks.
 assert 1 <= FLAGS.num_labels <= 9, 'Currently there are 9 classes handled [1..9].'
 assert isinstance(FLAGS.num_labels, int), 'FLAGS.num_labels should be an int.'
@@ -96,13 +70,20 @@ graph = tf.Graph()
 with graph.as_default():
     # Set seed for repoducible results
     np.random.seed(10)
+    
+    # Data loader.
+    loader = Loader(classes=FLAGS.num_labels, reduction=FLAGS.reduction,
+                    batch_size=FLAGS.batch_size, patch_size=FLAGS.patch_size,
+                    depth=FLAGS.depth, num_hidden=FLAGS.num_hidden,
+                    epoch=FLAGS.num_epochs, img_size=FLAGS.image_size)
 
-    # Return the container with data/labels for train/test datasets.
-    # ctest = loader.run(category='Testing')
+    # Return the container with data/labels for train data.
+    ctest = loader.run_load(data_dir=os.path.join(os.path.join(FLAGS.tianchi, 'data'),
+                                                  'test%d' % FLAGS.reduction),
+                            category='Testing')
 
-    test_container = load_test_data(test_dir, 1000, FLAGS.image_size, FLAGS.num_labels)
-    eval_batch = int(test_container.data.shape[0] / FLAGS.batch_size)
-    sess = tf.Session()
+    # For 9000 images, there are 562.5 batchs to process.
+    eval_batch = int(ctest.data.shape[0] / FLAGS.batch_size)
 
     cnn = CNN(batch_size=FLAGS.batch_size,
               image_size=FLAGS.image_size,
@@ -111,7 +92,10 @@ with graph.as_default():
               patch_size=FLAGS.patch_size,
               depth=FLAGS.depth,
               num_hidden=FLAGS.num_hidden)
+    
     saver = tf.train.Saver()
+    
+    sess = tf.Session()
     with sess.as_default():
 
         ckpt = tf.train.get_checkpoint_state(ckpt_dir)
@@ -122,10 +106,10 @@ with graph.as_default():
                 model_checkpoint_path = os.path.join(ckpt_dir, model_checkpoint_path)
             saver.restore(sess, model_checkpoint_path)
         else:
-            print("error loading checkpoint")
+            print("Error while loading model checkpoint.")
+        
         # Get the placeholders from the graph by name.
-        input_x = graph.get_operation_by_name("input_X").outputs[0]
-        # input_y = graph.get_operation_by_name("input_y").outputs[0]
+        input_X = graph.get_operation_by_name("input_X").outputs[0]
 
         # Tensors we want to evaluate.
         predictions = graph.get_operation_by_name("FC/predictions").outputs[0]
@@ -135,20 +119,18 @@ with graph.as_default():
         # Evaluation section.
         for batch in range(eval_batch):  # Number of batchs to process
             offset = (batch * FLAGS.batch_size)
-            if offset + FLAGS.batch_size > test_container.data.shape[0]:
-                batch_data = test_container.data[offset:, :, :, :]
-            else:
-                batch_data = test_container.data[offset:(offset + FLAGS.batch_size), :, :, :]
+            if offset + FLAGS.batch_size > ctest.data.shape[0]:
+                batch_data = ctest.data[offset:, :, :, :]
+            else:   
+                batch_data = ctest.data[offset:(offset + FLAGS.batch_size), :, :, :]
             feed_dict = {cnn.train_data: batch_data}
             batch_predictions = sess.run(cnn.predictions, feed_dict)
             all_predictions = np.concatenate([all_predictions, batch_predictions])
 
-        print(all_predictions.shape, test_container.labels.shape)
-        test_labels = np.argmax(test_container.labels, 1)
+        print(all_predictions.shape, ctest.labels.shape)
+        test_labels = np.argmax(ctest.labels, 1)
         test_length = min(test_labels.shape[0], all_predictions.shape[0])
 
-        print("all predictions")
-        print(all_predictions)
         # Matches between the predictions and the real labels.
         all_predictions = all_predictions.astype(int)[:test_length]
         test_labels = test_labels[:test_length]
@@ -156,7 +138,7 @@ with graph.as_default():
         # Total number of matches.
         correct_predictions = np.sum(matches)
         # Number of test data used.
-        # test_length = test_container.labels.shape[0]
+        # test_length = ctest.labels.shape[0]
         # Accuracy
         acc = 100 * (correct_predictions / float(test_length))
         print('Total number of test examples: %d' % test_length)

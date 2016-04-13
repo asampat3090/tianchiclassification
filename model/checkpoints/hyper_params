@@ -1,1 +1,0 @@
-{"batch_size": 16, "num_epochs": 32, "patch_size": 5, "reduction": 1, "num_hidden": 64, "num_labels": 9, "num_channels": 1, "image_size": 32, "depth": 16}
